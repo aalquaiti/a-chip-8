@@ -2,10 +2,35 @@
 package chip
 
 import (
-	"fmt"
 	"math/rand"
 	"time"
+
+	"github.com/hajimehoshi/ebiten"
 )
+
+// keys pressed by user
+var keys = [0x10]ebiten.Key{
+	ebiten.Key0,
+	ebiten.Key1,
+	ebiten.Key2,
+	ebiten.Key3,
+	ebiten.Key4,
+	ebiten.Key5,
+	ebiten.Key6,
+	ebiten.Key7,
+	ebiten.Key8,
+	ebiten.Key9,
+	ebiten.KeyA,
+	ebiten.KeyB,
+	ebiten.KeyC,
+	ebiten.KeyD,
+	ebiten.KeyE,
+	ebiten.KeyF,
+}
+
+// Built-in sprites that represents characters 0 to 9 and A to F
+// Size = 16 * 8 (no. of characters * sprite size)
+var sprites [0x80]byte
 
 // ram should be access from Ox200 (512) and upward. The first 512 bytes are
 // reseverd for the interpreter
@@ -46,15 +71,132 @@ Stack allows up to 16 levels of nested subroutines
 var stack [0x10]uint16
 
 // Offical Instruction set
-var inst [0x10]func(uint8, uint8, uint8)
+var Inst [0x10]func(uint8, uint8, uint8)
 
 // Initialie interpreter
 func init() {
-	// TODO: Add pre defined sprites to first part of memory
-	// (0 up to before 0x200)
 	rand.Seed(time.Now().Local().UnixNano())
 
-	inst[0x0] = func(n1, n2, n3 uint8) {
+	sprites = [0x80]byte{
+		// 0
+		0xF0,
+		0x90,
+		0x90,
+		0x90,
+		0xF0,
+
+		// 1
+		0x20,
+		0x60,
+		0x20,
+		0x20,
+		0x70,
+
+		// 2
+		0xF0,
+		0x10,
+		0xF0,
+		0x80,
+		0xF0,
+
+		// 3
+		0xF0,
+		0x10,
+		0xF0,
+		0x10,
+		0xF0,
+
+		// 4
+		0x90,
+		0x90,
+		0xF0,
+		0x10,
+		0x10,
+
+		// 5
+		0xF0,
+		0x80,
+		0xF0,
+		0x10,
+		0xF0,
+
+		// 6
+		0xF0,
+		0x80,
+		0xF0,
+		0x90,
+		0xF0,
+
+		// 7
+		0xF0,
+		0x10,
+		0x20,
+		0x40,
+		0x40,
+
+		// 8
+		0xF0,
+		0x90,
+		0xF0,
+		0x90,
+		0xF0,
+
+		// 9
+		0xF0,
+		0x90,
+		0xF0,
+		0x10,
+		0xF0,
+
+		// A
+		0xF0,
+		0x90,
+		0xF0,
+		0x90,
+		0x90,
+
+		// B
+		0xE0,
+		0x90,
+		0x90,
+		0x90,
+		0xE0,
+
+		// C
+		0xF0,
+		0x80,
+		0x80,
+		0x80,
+		0xF0,
+
+		// D
+		0xE0,
+		0x90,
+		0x90,
+		0x90,
+		0xE0,
+
+		// E
+		0xF0,
+		0x80,
+		0xF0,
+		0x80,
+		0xF0,
+
+		// F
+		0xF0,
+		0x80,
+		0xF0,
+		0x80,
+		0x80,
+	}
+
+	// Load sprites into memory
+	for i := 0; i < len(sprites); i++ {
+		ram[i] = sprites[i]
+	}
+
+	Inst[0x0] = func(n1, n2, n3 uint8) {
 		switch {
 		// 00E0
 		case createNipple3(n1, n2, n3) == 0x00E0:
@@ -71,30 +213,30 @@ func init() {
 
 	}
 
-	inst[0x1] = func(n1, n2, n3 uint8) {
+	Inst[0x1] = func(n1, n2, n3 uint8) {
 		pc = createNipple3(n1, n2, n3)
 	}
 
-	inst[0x2] = func(n1, n2, n3 uint8) {
+	Inst[0x2] = func(n1, n2, n3 uint8) {
 		sp++
 		stack[sp] = pc
 		pc = createNipple3(n1, n2, n3)
 	}
 
-	inst[0x3] = func(n1, n2, n3 uint8) {
+	Inst[0x3] = func(n1, n2, n3 uint8) {
 		if regs[n1] == createNipple2(n2, n3) {
 			pc += 2
 		}
 	}
 
-	inst[0x4] = func(n1, n2, n3 uint8) {
+	Inst[0x4] = func(n1, n2, n3 uint8) {
 		if regs[n1] != createNipple2(n2, n3) {
 			pc += 2
 		}
 
 	}
 
-	inst[0x5] = func(n1, n2, n3 uint8) {
+	Inst[0x5] = func(n1, n2, n3 uint8) {
 		if n3 != 0 {
 			panic("Unsupported op code")
 		}
@@ -105,15 +247,15 @@ func init() {
 
 	}
 
-	inst[0x6] = func(n1, n2, n3 uint8) {
+	Inst[0x6] = func(n1, n2, n3 uint8) {
 		regs[n1] = createNipple2(n2, n3)
 	}
 
-	inst[0x7] = func(n1, n2, n3 uint8) {
+	Inst[0x7] = func(n1, n2, n3 uint8) {
 		regs[n1] += createNipple2(n2, n3)
 	}
 
-	inst[0x8] = func(n1, n2, n3 uint8) {
+	Inst[0x8] = func(n1, n2, n3 uint8) {
 		switch n3 {
 		case 0:
 			regs[n1] = regs[n2]
@@ -149,7 +291,7 @@ func init() {
 		}
 	}
 
-	inst[0x9] = func(n1, n2, n3 uint8) {
+	Inst[0x9] = func(n1, n2, n3 uint8) {
 		if n3 != 0 {
 			panic("Unsupported op code")
 		}
@@ -160,21 +302,21 @@ func init() {
 
 	}
 
-	inst[0xA] = func(n1, n2, n3 uint8) {
+	Inst[0xA] = func(n1, n2, n3 uint8) {
 		iReg = createNipple3(n1, n2, 3)
 	}
 
-	inst[0xB] = func(n1, n2, n3 uint8) {
+	Inst[0xB] = func(n1, n2, n3 uint8) {
 		pc = createNipple3(n1, n2, n3) + uint16(regs[0])
 	}
 
-	inst[0xC] = func(n1, n2, n3 uint8) {
+	Inst[0xC] = func(n1, n2, n3 uint8) {
 		random := uint8(rand.Int31n(256))
 		value := createNipple2(n2, n3)
 		regs[n1] = value & random
 	}
 
-	inst[0xD] = func(n1, n2, n3 uint8) {
+	Inst[0xD] = func(n1, n2, n3 uint8) {
 
 		// Draw a sprite on screen at posiont x (n1) and y (n2)
 		// Draw happens in Xor Mode, i.e:
@@ -212,35 +354,41 @@ func init() {
 		}
 	}
 
-	inst[0xE] = func(n1, n2, n3 uint8) {
+	Inst[0xE] = func(n1, n2, n3 uint8) {
 		switch createNipple2(n2, n3) {
 		case 0x9E:
-			// TODO complete
-			fmt.Println("Skipping next instruction when key is pressed")
+			if ebiten.IsKeyPressed(keys[regs[n1]]) {
+				pc += 2
+			}
+
 		case 0xA1:
-			// TODO complete
-			fmt.Println("Skipping next instruction when key is not pressed")
+			if !ebiten.IsKeyPressed(keys[regs[n1]]) {
+				pc += 2
+			}
 		default:
 			panic("Unsupported op code")
 		}
 	}
 
-	inst[0xF] = func(n1, n2, n3 uint8) {
+	Inst[0xF] = func(n1, n2, n3 uint8) {
 		switch createNipple2(n2, n3) {
 		case 0x07:
 			regs[n1] = dtReg
 		case 0xA:
-			// TODO complete
-			fmt.Println("Waiting for a key to be pressed")
+			if !ebiten.IsKeyPressed(keys[regs[n1]]) {
+				// Wait until a key is pressed by not moving the pc
+				pc -= 2
+			}
 		case 0x15:
 			dtReg = regs[n1]
 		case 0x18:
 			stReg = regs[n1]
 		case 0x1E:
-			iReg = uint16(regs[n1])
+			iReg += uint16(regs[n1])
 		case 0x29:
-			// TODO complete
-			fmt.Println("Updating I to a sprite memory address")
+			// Set I to the location of the sprite digit
+			// built-in digits are stored at the start of the memory
+			iReg = uint16(ram[regs[n1]])
 		case 0x33:
 			ram[iReg], ram[iReg+1], ram[iReg+2] = toBCD(regs[n1])
 		case 0x55:
@@ -264,6 +412,10 @@ func init() {
 func tick() {
 	if dtReg > 0 {
 		dtReg--
+	}
+
+	if stReg > 0 {
+		stReg--
 	}
 	// Add sound effect for when sound timer is active and decrement by one
 }
