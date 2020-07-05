@@ -3,27 +3,40 @@ package chip
 
 import "github.com/hajimehoshi/ebiten"
 
-// Logical Screen Width
-var screenWidth int
+// Game loop used for ebiten game engine
+type game struct {
+	// Logical Screen Width
+	width int
 
-// Logical Screen Height
-var screenHeight int
+	// Logical Screen Height
+	height int
 
-// Reference to the screen
-// Only one screen will exist within the process
-var screen *Screen
+	// pixels matrix that is used to render screen
+	pixels []byte
 
-// ebiten Game Engine
-var g *game
+	// Update function that logic every tick
+	update func()
+}
 
-// Update function that handles interpreter logic every tick
-var update func()
+func (g *game) Update(screen *ebiten.Image) error {
+	g.update()
+	return nil
+}
+
+func (g *game) Draw(screen *ebiten.Image) {
+	screen.ReplacePixels(g.pixels)
+}
+
+func (g *game) Layout(outsideWidth, outsideHeight int) (int, int) {
+	return g.width, g.height
+}
 
 // Screen is a monochrome display
-type Screen struct{}
+type Screen struct {
 
-// pixels matrix that is used to render screen
-var pixels []byte
+	// ebiten Game Engine
+	g *game
+}
 
 // NewScreen creates a new Screen if no previous screen was created. It ensures
 // that only one screen exists (singelton).
@@ -31,73 +44,53 @@ var pixels []byte
 // height: logcial screen height
 // windowWidth: The displayed window width
 // windowHeight: The displayed window height
-// updatef: Update function that handles logic and is called every tick
+// update: Update function that handles logic and is called every tick
 func NewScreen(width, height, windowWidth, windowHeight int,
-	updateF func()) *Screen {
-	if screen != nil {
-		return screen
+	update func()) (s *Screen) {
+
+	g := &game{
+		pixels: make([]byte, width*height*4),
+		width:  width,
+		height: height,
+		update: update,
 	}
-
-	screen = new(Screen)
-	update = updateF
-	g = &game{}
-
-	screenWidth = width
-	screenHeight = height
-	pixels = make([]byte, screenWidth*screenHeight*4)
-
 	ebiten.SetWindowSize(windowWidth, windowHeight)
 	ebiten.SetWindowTitle("A Chip 8")
 
-	return screen
+	s = &Screen{g: g}
+
+	return s
 }
 
 // Show the window and start main loop
 func (s *Screen) Show() {
-	ebiten.RunGame(g)
+	ebiten.RunGame(s.g)
 }
 
 // Reset clears the screen
 func (s *Screen) Reset() {
-	pixels = make([]byte, screenWidth*screenHeight*4)
+	s.g.pixels = make([]byte, s.g.width*s.g.height*4)
 }
 
 // SetPixels update the pixels matrix
 func (s *Screen) SetPixels(pix []byte) {
-	pixels = pix
+	s.g.pixels = pix
 }
 
 // PixelAt retrieve if pixel is writen at given coordinates
 func (s *Screen) PixelAt(x, y int) bool {
-	return pixels[(x*4)+(y*screenWidth*4)] == 1
+	return s.g.pixels[(x*4)+(y*s.g.width*4)] == 1
 }
 
 // Draw a white pixel at given position or erase it
 func (s *Screen) Draw(x, y int, write bool) {
-	pos := (x * 4) + (y * screenWidth * 4)
+	pos := (x * 4) + (y * s.g.width * 4)
 	var value byte = 0xFF
 	if !write {
 		value = 0
 	}
-	pixels[pos] = value
-	pixels[pos+1] = value
-	pixels[pos+2] = value
-	pixels[pos+3] = value
-}
-
-// Game loop used for ebiten game engine
-type game struct {
-}
-
-func (g *game) Update(screen *ebiten.Image) error {
-	update()
-	return nil
-}
-
-func (g *game) Draw(screen *ebiten.Image) {
-	screen.ReplacePixels(pixels)
-}
-
-func (g *game) Layout(outsideWidth, outsideHeight int) (int, int) {
-	return screenWidth, screenHeight
+	s.g.pixels[pos] = value
+	s.g.pixels[pos+1] = value
+	s.g.pixels[pos+2] = value
+	s.g.pixels[pos+3] = value
 }

@@ -62,10 +62,15 @@ Returns difference as byte with borrow
 */
 func sub8(x, y uint8) (diff, borrow uint8) {
 	diff = x - y
-	borrow = ((^x & y) | (^(x ^ y) & diff)) >> 7
 
-	// Flip as borrow here indicates the opposite
-	borrow = ^borrow & 0x1
+	// TODO delete after check
+	// borrow = ((^x & y) | (^(x ^ y) & diff)) >> 7
+	// // Flip as borrow here indicates the opposite
+	// borrow = ^borrow & 0x1
+
+	if x > y {
+		borrow = 1
+	}
 
 	return
 }

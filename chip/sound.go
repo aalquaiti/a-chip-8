@@ -1,3 +1,4 @@
+// Package chip provide functionality for the chip-8 interpreter
 package chip
 
 import (
@@ -10,9 +11,15 @@ import (
 	"github.com/faiface/beep/speaker"
 )
 
-var bufferedStream *beep.Buffer
+// Sound used to play a beep or stop from playing one
+type Sound struct {
+	buffStream *beep.Buffer // Used to buffer beep file
+}
 
-func init() {
+// NewSound create a new reference for sound
+// This method should only be called once in the life of the app
+func NewSound() (s *Sound) {
+	s = &Sound{}
 
 	// Open the beep file
 	f, err := os.Open("beep.mp3")
@@ -27,18 +34,22 @@ func init() {
 	defer streamer.Close()
 
 	// Buffer file into memory
-	bufferedStream = beep.NewBuffer(format)
-	bufferedStream.Append(streamer)
+	s.buffStream = beep.NewBuffer(format)
+	s.buffStream.Append(streamer)
 
 	// Divided by zero to match update function
 	// Can be adjusted as see fit
 	speaker.Init(format.SampleRate, format.SampleRate.N(time.Second/60))
+
+	return
 }
 
-func Play() {
-	speaker.Play(bufferedStream.Streamer(0, bufferedStream.Len()))
+// PlaySound plays a beep
+func (s *Sound) PlaySound() {
+	speaker.Play(s.buffStream.Streamer(0, s.buffStream.Len()))
 }
 
-func Stop() {
+// StopSound stops a beep
+func (s *Sound) StopSound() {
 	speaker.Clear()
 }
