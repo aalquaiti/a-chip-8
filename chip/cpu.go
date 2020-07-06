@@ -84,116 +84,52 @@ func init() {
 
 	sprites = [0x80]byte{
 		// 0
-		0xF0,
-		0x90,
-		0x90,
-		0x90,
-		0xF0,
+		0xF0, 0x90, 0x90, 0x90, 0xF0,
 
 		// 1
-		0x20,
-		0x60,
-		0x20,
-		0x20,
-		0x70,
+		0x20, 0x60, 0x20, 0x20, 0x70,
 
 		// 2
-		0xF0,
-		0x10,
-		0xF0,
-		0x80,
-		0xF0,
+		0xF0, 0x10, 0xF0, 0x80, 0xF0,
 
 		// 3
-		0xF0,
-		0x10,
-		0xF0,
-		0x10,
-		0xF0,
+		0xF0, 0x10, 0xF0, 0x10, 0xF0,
 
 		// 4
-		0x90,
-		0x90,
-		0xF0,
-		0x10,
-		0x10,
+		0x90, 0x90, 0xF0, 0x10, 0x10,
 
 		// 5
-		0xF0,
-		0x80,
-		0xF0,
-		0x10,
-		0xF0,
+		0xF0, 0x80, 0xF0, 0x10, 0xF0,
 
 		// 6
-		0xF0,
-		0x80,
-		0xF0,
-		0x90,
-		0xF0,
+		0xF0, 0x80, 0xF0, 0x90, 0xF0,
 
 		// 7
-		0xF0,
-		0x10,
-		0x20,
-		0x40,
-		0x40,
+		0xF0, 0x10, 0x20, 0x40, 0x40,
 
 		// 8
-		0xF0,
-		0x90,
-		0xF0,
-		0x90,
-		0xF0,
+		0xF0, 0x90, 0xF0, 0x90, 0xF0,
 
 		// 9
-		0xF0,
-		0x90,
-		0xF0,
-		0x10,
-		0xF0,
+		0xF0, 0x90, 0xF0, 0x10, 0xF0,
 
 		// A
-		0xF0,
-		0x90,
-		0xF0,
-		0x90,
-		0x90,
+		0xF0, 0x90, 0xF0, 0x90, 0x90,
 
 		// B
-		0xE0,
-		0x90,
-		0xE0,
-		0x90,
-		0xE0,
+		0xE0, 0x90, 0xE0, 0x90, 0xE0,
 
 		// C
-		0xF0,
-		0x80,
-		0x80,
-		0x80,
-		0xF0,
+		0xF0, 0x80, 0x80, 0x80, 0xF0,
 
 		// D
-		0xE0,
-		0x90,
-		0x90,
-		0x90,
-		0xE0,
+		0xE0, 0x90, 0x90, 0x90, 0xE0,
 
 		// E
-		0xF0,
-		0x80,
-		0xF0,
-		0x80,
-		0xF0,
+		0xF0, 0x80, 0xF0, 0x80, 0xF0,
 
 		// F
-		0xF0,
-		0x80,
-		0xF0,
-		0x80,
-		0x80,
+		0xF0, 0x80, 0xF0, 0x80, 0x80,
 	}
 
 	// Load sprites into memory
@@ -281,16 +217,20 @@ func init() {
 			regs[n1], regs[0xF] = sub8(regs[n1], regs[n2])
 
 		case 6:
-			regs[0xF] = regs[n2] & 0x1
-			regs[n1] = regs[n2] >> 1
+			regs[0xF] = regs[n1] & 0x1
+			// Note: Some interpreters would shift (n2) value not (n1)
+			// regs[n1] = regs[n2] >> 1
+			regs[n1] = regs[n1] >> 1
 
 		case 7:
 			regs[n1], regs[0xF] = sub8(regs[n2], regs[n1])
 
 		case 0xE:
 			// TODO check if functioning correctly
-			regs[0xF] = (regs[n2] & 0xF) >> 3
-			regs[n1] = regs[n2] << 1
+			regs[0xF] = (regs[n1] & 0x80) >> 7
+			// Note: Some interpreters would shift (n2) value not (n1)
+			// regs[n1] = regs[n2] << 1
+			regs[n1] = regs[n1] << 1
 
 		default:
 			panic("Unsupported op code at 0x8")
@@ -324,7 +264,7 @@ func init() {
 
 	inst[0xD] = func(n1, n2, n3 uint8) {
 
-		// Draw a sprite on screen at posiont x (n1) and y (n2)
+		// Draw a sprite on screen at position x (n1) and y (n2)
 		// Draw happens in Xor Mode, i.e:
 		// pixel = current state XOR new state
 		// Each sprite width is 8 bits with height n3
@@ -334,30 +274,26 @@ func init() {
 
 		// TODO check impl
 		for j := 0; j < int(n3); j++ {
-			value := ram[int(iReg)+j]
+			sprite := ram[int(iReg)+j]
 
 			for i := 0; i < 8; i++ {
 				x := (int(regs[n1]) + i) % screen.g.width
 				y := (int(regs[n2]) + j) % screen.g.height
-
 				// Use a mask to extract the bit
 				mask := uint8(0x80 >> i)
-				pixelSet := value&mask == mask
-
+				pixelSet := sprite&mask == mask
 				// if pixel is to be written (i.e bit is set to 1)
 				if pixelSet {
-
 					// By now, we know pixel is set
 					// If current pixel drawn is set, then a flip will occur
 					// indicating a collision
 					if screen.PixelAt(x, y) {
 						regs[0xF] = 1
-						// TODO Check if this is right
-						// pixelSet = false
 					}
-
+					// Flip the previous state. So if it was written
+					// it will be
+					screen.Draw(x, y, !screen.PixelAt(x, y))
 				}
-				screen.Draw(x, y, pixelSet)
 			}
 		}
 	}
@@ -417,12 +353,14 @@ func init() {
 			for i := uint16(0); i <= uint16(n1); i++ {
 				ram[iReg+i] = regs[i]
 			}
-			iReg += uint16(n1) + 1
+			// Note Some interpreters would update I
+			// iReg += uint16(n1) + 1
 		case 0x65:
 			for i := uint16(0); i <= uint16(n1); i++ {
 				regs[i] = ram[iReg+i]
 			}
-			iReg += uint16(n1) + 1
+			// Note Some interpreters would update I
+			// iReg += uint16(n1) + 1
 		default:
 			fmt.Println(n1, n2, n3)
 			panic("Unsupported op code at 0xF")

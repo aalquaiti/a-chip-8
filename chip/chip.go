@@ -18,8 +18,8 @@ func init() {
 		windowHeight, Update)
 	sound = NewSound()
 	// Load("test_opcode.ch8")
-	Load("BC_test.ch8")
-	// Load("INVADERS")
+	// Load("BC_test.ch8")
+	Load("INVADERS")
 
 	// for y := 0; y < screenHeight; y++ {
 	// 	for x := 0; x < screenWidth; x++ {

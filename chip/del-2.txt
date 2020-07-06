@@ -1,0 +1,70 @@
+PC: 0000 Clear screen
+PC: 0002 V3 = x00
+PC: 0004 V4 = x01
+PC: 0006 V5 = xEE
+PC: 0008 V5 == xEE? => Yes. Skip 
+PC: 000C V3 = x00
+PC: 000E V4 = x02
+PC: 0010 V5 = xEE
+PC: 0012 V6 = xEE
+PC: 0014 V5 == V6? => Yes. Skip
+PC: 0018 V3 = x00
+PC: 001A V4 = x03
+PC: 001C V5 = xEE
+PC: 001E V5 != xFD? => Yes. Skip
+PC: 0022 V3 = 0x00
+PC: 0024 V4 = x04
+PC: 0026 V5 = xEE
+PC: 0028 V5 = V5 + x01 = 0xEE + x01 => V5 = xEF
+PC: 002A V5 == xEF? => Yes. Skip
+PC: 002E V3 = x00
+PC: 0030 V4 = x05
+PC: 0032 VF = x01
+PC: 0034 V5 = xEE
+PC: 0036 V6 = xEF
+PC: 0038 V5 = V5 - V6 = xEE - xEF => V5 = FF, VF = 0
+PC: 003A VF == 0? => Yes. Skip
+PC: 003E V3 = x00
+PC: 0040 V4 = x06
+PC: 0042 VF = x00
+PC: 0044 V5 = xEF
+PC: 0046 V6 = xEE
+PC: 0048 V5 = V5 - V6 = xEF - xEE => V5 = 1, VF = 1
+PC: 004A VF == 1? => Yes. Skip
+PC: 004E VF = x00
+PC: 0050 V3 = x00
+PC: 0052 V4 = x07
+PC: 0054 V5 = xEE
+PC: 0056 V6 = xEF
+PC: 0058 V5 = V6 - V5 = xEF - xEE => V5 = 1, VF = 1
+PC: 005A VF == 01? => Yes. Skip
+PC: 005E V3 = x00
+PC: 0060 V4 = x08
+PC: 0062 VF = 01
+PC: 0064 V5 = xEF
+PC: 0066 V6 = xEE
+PC: 0068 V5 = V6 - V5 = xEE - xEF => V5 = xFF, VF = 0
+PC: 006A VF == 0? => Yes. Skip
+PC: 006E V3 = x00
+PC: 0070 V4 = x09
+PC: 0072 V5 = xF0
+PC: 0074 V5 = x0F
+PC: 0076 V5 = V5 | V6 = xF0 | x0F => V5 = xFF
+PC: 0078 VF == xFF? => Yes. Skip
+PC: 007C V3 = x01
+PC: 007E V4 = x00
+PC: 0080 V5 = xF0
+PC: 0082 V6 = x0F
+PC: 0084 V5 = V5 & V6 = xF0 & x0F => V5 = x00
+PC: 0086 V5 == x00? => Yes. Skip
+PC: 008A V3 = x01
+PC: 008C V4 = x01
+PC: 008E V5 = xF0
+PC: 0090 V6 = x0F
+PC: 0092 V5 = V5 XOR V6 = xF0 XOR x0F => V5 = xFF
+PC: 0094 V5 == xFF? => Yes. Skip
+PC: 0098 VF = x00
+PC: 009A V3 = x01
+PC: 009C V4 = x02
+PC: 009E V5 = x81
+PC: 00A0 V5 = 

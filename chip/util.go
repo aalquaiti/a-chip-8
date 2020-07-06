@@ -10,12 +10,12 @@ func toBCD(n uint8) (x, y, z uint8) {
 	// Get the position of the most significant bit
 	// TODO make it a seperate function
 	i := 8
-	for {
-		if n&0x10 == 0x10 {
+	for i >= 0 {
+		if n&0x80 == 0x80 {
 			break
 		}
 		i--
-		n <<= 1
+		n >>= 1
 	}
 
 	for i > 0 {

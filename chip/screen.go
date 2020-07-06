@@ -79,7 +79,7 @@ func (s *Screen) SetPixels(pix []byte) {
 
 // PixelAt retrieve if pixel is writen at given coordinates
 func (s *Screen) PixelAt(x, y int) bool {
-	return s.g.pixels[(x*4)+(y*s.g.width*4)] == 1
+	return s.g.pixels[(x*4)+(y*s.g.width*4)] == 0xFF
 }
 
 // Draw a white pixel at given position or erase it
