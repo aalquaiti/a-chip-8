@@ -1,3 +1,4 @@
+// Package chip provide functionality for the chip-8 interpreter
 package chip
 
 /*
@@ -8,7 +9,6 @@ func toBCD(n uint8) (x, y, z uint8) {
 	value := uint32(n)
 
 	// Get the position of the most significant bit
-	// TODO make it a seperate function
 	i := 8
 	for i >= 0 {
 		if n&0x80 == 0x80 {
@@ -62,12 +62,6 @@ Returns difference as byte with borrow
 */
 func sub8(x, y uint8) (diff, borrow uint8) {
 	diff = x - y
-
-	// TODO delete after check
-	// borrow = ((^x & y) | (^(x ^ y) & diff)) >> 7
-	// // Flip as borrow here indicates the opposite
-	// borrow = ^borrow & 0x1
-
 	if x > y {
 		borrow = 1
 	}

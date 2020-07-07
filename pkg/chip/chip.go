@@ -1,3 +1,4 @@
+// Package chip provide functionality for the chip-8 interpreter
 package chip
 
 const (
@@ -19,7 +20,7 @@ func init() {
 	sound = NewSound()
 	// Load("test_opcode.ch8")
 	// Load("BC_test.ch8")
-	Load("INVADERS")
+	Load("roms/INVADERS")
 
 	// for y := 0; y < screenHeight; y++ {
 	// 	for x := 0; x < screenWidth; x++ {
@@ -61,5 +62,9 @@ func Start() {
 
 // Update the current the state of the machine
 func Update() {
-	Tick()
+	// chip-8 runs at about 500hz. As a tick is called 60 times a second,
+	// this tick needs to be called 8 times to match the right speed
+	for i := 0; i < 8; i++ {
+		Tick()
+	}
 }

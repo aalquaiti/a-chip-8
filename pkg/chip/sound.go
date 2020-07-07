@@ -17,12 +17,13 @@ type Sound struct {
 }
 
 // NewSound create a new reference for sound
+// expected asset file is in /assets directory
 // This method should only be called once in the life of the app
 func NewSound() (s *Sound) {
 	s = &Sound{}
 
 	// Open the beep file
-	f, err := os.Open("beep.mp3")
+	f, err := os.Open("assets/beep.mp3")
 	if err != nil {
 		log.Fatal(err)
 	}

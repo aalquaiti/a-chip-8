@@ -11,23 +11,45 @@ import (
 )
 
 // keys pressed by user
+// Keys are mapped to fit with a modern keyboard
+// Original configuration in [], mapped value in ():
+// |[1] (1)|[2] (2)|[3] (3)|[C] (4)|
+// |[4] (Q)|[5] (W)|[6] (E)|[D] (R)|
+// |[7] (A)|[8] (S)|[9] (D)|[E] (F)|
+// |[A] (Z)|[0] (X)|[B] (C)|[F] (V)|
 var keys = [0x10]ebiten.Key{
-	ebiten.Key0,
+	// [0] (X)
+	ebiten.KeyX,
+	// [1] (1)
 	ebiten.Key1,
+	// [2] (2)
 	ebiten.Key2,
+	// [3] (3)
 	ebiten.Key3,
-	ebiten.Key4,
-	ebiten.Key5,
-	ebiten.Key6,
-	ebiten.Key7,
-	ebiten.Key8,
-	ebiten.Key9,
-	ebiten.KeyA,
-	ebiten.KeyB,
-	ebiten.KeyC,
-	ebiten.KeyD,
+	// [4] (Q)
+	ebiten.KeyQ,
+	// [5] (W)
+	ebiten.KeyW,
+	// [6] (E)
 	ebiten.KeyE,
+	// [7] (A)
+	ebiten.KeyA,
+	// [8] (S)
+	ebiten.KeyS,
+	// [9] (D)
+	ebiten.KeyD,
+	// [A] (Z)
+	ebiten.KeyZ,
+	// [B] (C)
+	ebiten.KeyC,
+	// [C] (4)
+	ebiten.Key4,
+	// [D] (R)
+	ebiten.KeyR,
+	// [E] (F)
 	ebiten.KeyF,
+	// [F] (V)
+	ebiten.KeyV,
 }
 
 // Built-in sprites that represents characters 0 to 9 and A to F
@@ -213,7 +235,6 @@ func init() {
 			regs[n1], regs[0xF] = add8(regs[n1], regs[n2])
 
 		case 5:
-			// TODO check sub8 function
 			regs[n1], regs[0xF] = sub8(regs[n1], regs[n2])
 
 		case 6:
@@ -226,7 +247,6 @@ func init() {
 			regs[n1], regs[0xF] = sub8(regs[n2], regs[n1])
 
 		case 0xE:
-			// TODO check if functioning correctly
 			regs[0xF] = (regs[n1] & 0x80) >> 7
 			// Note: Some interpreters would shift (n2) value not (n1)
 			// regs[n1] = regs[n2] << 1
@@ -298,7 +318,6 @@ func init() {
 		}
 	}
 
-	// TODO check if it works
 	inst[0xE] = func(n1, n2, n3 uint8) {
 
 		switch createNipple2(n2, n3) {
@@ -321,8 +340,6 @@ func init() {
 		case 0x07:
 			regs[n1] = dtReg
 		case 0xA:
-			// TODO according to documentation, it should be any key
-			// Check if it works
 			// Wait until a key is pressed by not moving the pc
 			pressed := false
 			for k, v := range keys {
@@ -370,6 +387,7 @@ func init() {
 
 // Tick executes an instruction at pc
 func Tick() {
+
 	fmt.Printf("PC: %.4X\t", pc-0x200)
 
 	// Retrieve the first two bytes of instructions
