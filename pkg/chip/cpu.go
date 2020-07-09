@@ -408,6 +408,10 @@ func Tick() {
 
 	inst[op](n1, n2, n3)
 
+}
+
+// IncTime increments timer by one second
+func IncTime() {
 	if dtReg > 0 {
 		dtReg--
 	}

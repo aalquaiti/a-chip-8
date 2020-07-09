@@ -1,6 +1,11 @@
 // Package chip provide functionality for the chip-8 interpreter
 package chip
 
+import (
+	"fmt"
+	"os"
+)
+
 const (
 	screenWidth  = 64
 	screenHeight = 32
@@ -18,41 +23,13 @@ func init() {
 	screen = NewScreen(screenWidth, screenHeight, windowWidth,
 		windowHeight, Update)
 	sound = NewSound()
-	// Load("test_opcode.ch8")
-	// Load("BC_test.ch8")
-	Load("roms/INVADERS")
 
-	// for y := 0; y < screenHeight; y++ {
-	// 	for x := 0; x < screenWidth; x++ {
-	// 		if y == (screenHeight/2)-1 || y == screenHeight/2 {
-	// 			screen.Draw(x, y, true)
-	// 		}
-	// 	}
-	// }
-
-	// // V0 = 0
-	// ram[0x200] = 0x60
-	// ram[0x201] = 0x00
-
-	// // V1 = 0
-	// ram[0x202] = 0x61
-	// ram[0x203] = 0x00
-
-	// // V2 = A
-	// ram[0x204] = 0x62
-	// ram[0x205] = 0x0A
-
-	// // Set I to point to char A
-	// ram[0x206] = 0xF2
-	// ram[0x207] = 0x29 // constant
-
-	// // Draw character A at (V0,V1)
-	// ram[0x208] = 0xD0
-	// ram[0x209] = 0x15
-
-	// // Infinite Loop
-	// ram[0x20A] = 0x12
-	// ram[0x20B] = 0x0A
+	if len(os.Args) < 2 {
+		fmt.Println("Usage: chip8 [file]")
+		os.Exit(0)
+	}
+	fmt.Println(os.Args[1])
+	Load(os.Args[1])
 }
 
 // Start the interpreter
@@ -67,4 +44,6 @@ func Update() {
 	for i := 0; i < 8; i++ {
 		Tick()
 	}
+
+	IncTime()
 }

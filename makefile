@@ -9,4 +9,4 @@ build:
 	@go build -o bin/chip8 ./cmd/chip8/main.go
 
 run:
-	@go run ./cmd/chip8/main.go
+	@go run ./cmd/chip8/main.go $(file)
